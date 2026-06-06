@@ -1,4 +1,13 @@
-export function buildPrompt(inputGame: string, recommendations: ReadonlyArray<{ title: string; rating: string; similarity_score: number; tags_clean: string; desc_sentence: string }>): string {
+export function buildPrompt(
+	inputGame: string,
+	recommendations: ReadonlyArray<{
+		title: string
+		rating: string
+		similarity_score: number
+		tags_clean: string
+		desc_sentence: string
+	}>,
+): string {
 	const recLines = recommendations
 		.map(
 			(r, i) =>

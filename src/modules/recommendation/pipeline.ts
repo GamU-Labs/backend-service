@@ -20,7 +20,9 @@ export const pipeline = (title: string, topN: number) =>
 
 		const recs = yield* recService.recommend(title, topN)
 
-		yield* Effect.logInfo(`pipeline: found ${recs.recommendations.length} recommendations, calling LLM`)
+		yield* Effect.logInfo(
+			`pipeline: found ${recs.recommendations.length} recommendations, calling LLM`,
+		)
 
 		const prompt = buildPrompt(title, recs.recommendations)
 		const llmResponse = yield* llmService.generateResponse(prompt)

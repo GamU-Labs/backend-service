@@ -2,23 +2,16 @@ import { LanguageModel } from '@effect/ai'
 import { GoogleClient, GoogleLanguageModel } from '@effect/ai-google'
 import { OpenAiClient, OpenAiLanguageModel } from '@effect/ai-openai'
 import { FetchHttpClient } from '@effect/platform'
-import { Context, Effect, Layer, Redacted, Schema } from 'effect'
+import { Context, Effect, Layer, Redacted } from 'effect'
 
 import { AppConfig } from '../../config/config.js'
-
-export class LlmError extends Schema.TaggedError<LlmError>()('LlmError', {
-	message: Schema.String,
-	cause: Schema.optional(Schema.String),
-}) {}
+import { LlmError } from '../../lib/errors.js'
 
 export interface LLMService {
 	readonly generateResponse: (prompt: string) => Effect.Effect<string, LlmError>
 }
 
-export class LLMService extends Context.Tag('LLMService')<
-	LLMService,
-	LLMService
->() {}
+export class LLMService extends Context.Tag('LLMService')<LLMService, LLMService>() {}
 
 const makeGeminiLayer = (apiKey: string) =>
 	GoogleLanguageModel.layer({
@@ -55,20 +48,24 @@ export const LLMServiceLive = Layer.effect(
 
 		const service: LLMService = {
 			generateResponse: (prompt: string) => {
-			const logGemini = Effect.logDebug(`LLM: trying Gemini`)
-			const tryGemini = Effect.zipRight(logGemini,
+				const logGemini = Effect.logDebug(`LLM: trying Gemini`)
+				const tryGemini = Effect.zipRight(
+					logGemini,
 					LanguageModel.generateText({ prompt })
 						.pipe(Effect.map((r) => r.text))
 						.pipe(Effect.provide(geminiLayer))
-						.pipe(Effect.mapError((e) => new LlmError({ message: e.message, cause: e._tag }))),
+						.pipe(Effect.mapError((e) => new LlmError({ message: e.message }))),
 				)
 
-				const logOpenAI = Effect.logInfo(`LLM: Gemini failed, falling back to OpenRouter (${config.routerModel})`)
-				const tryOpenAI = Effect.zipRight(logOpenAI,
+				const logOpenAI = Effect.logInfo(
+					`LLM: Gemini failed, falling back to OpenRouter (${config.routerModel})`,
+				)
+				const tryOpenAI = Effect.zipRight(
+					logOpenAI,
 					LanguageModel.generateText({ prompt })
 						.pipe(Effect.map((r) => r.text))
 						.pipe(Effect.provide(openaiLayer))
-						.pipe(Effect.mapError((e) => new LlmError({ message: e.message, cause: e._tag }))),
+						.pipe(Effect.mapError((e) => new LlmError({ message: e.message }))),
 				)
 
 				return Effect.catchAll(tryGemini, () => tryOpenAI)

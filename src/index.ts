@@ -15,7 +15,9 @@ const AppLayer = Layer.merge(RecommendationServiceLive, LLMServiceLive).pipe(
 
 const main = Effect.gen(function* () {
 	const config = yield* AppConfig
-	yield* Effect.logInfo(`Memulai server di port ${config.port} (router model: ${config.routerModel})`)
+	yield* Effect.logInfo(
+		`Starting server on port ${config.port} (router model: ${config.routerModel})`,
+	)
 
 	const serverLayer = HttpServer.serve(buildAppRouter()).pipe(
 		Layer.provide(NodeHttpServer.layer(createServer, { port: config.port })),

@@ -1,21 +1,8 @@
-import { Context, Effect, Layer, Schema } from 'effect'
+import { Context, Effect, Layer } from 'effect'
 import { FileSystem } from '@effect/platform/FileSystem'
 import { Path } from '@effect/platform/Path'
 import { GameDataLayer, GameDataLayerLive, SimilarityEntry } from '../../data/games.js'
-
-export class GameNotFoundError extends Schema.TaggedError<GameNotFoundError>()(
-	'GameNotFoundError',
-	{ title: Schema.String },
-) {
-	get message(): string {
-		return `Game '${this.title}' tidak ditemukan di database.`
-	}
-}
-
-export class ModelNotLoadedError extends Schema.TaggedError<ModelNotLoadedError>()(
-	'ModelNotLoadedError',
-	{ message: Schema.String },
-) {}
+import { GameNotFoundError, ModelNotLoadedError } from '../../lib/errors.js'
 
 export interface RecommendationResult {
 	readonly inputGame: string
