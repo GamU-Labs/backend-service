@@ -1,4 +1,4 @@
-import { Effect } from 'effect'
+import { Effect, Option } from 'effect'
 
 import { type SimilarityEntry } from '../../data/games.js'
 import { buildPrompt } from '../llm/prompt.js'
@@ -8,7 +8,7 @@ import { RecommendationService } from './recommendation.service.js'
 export interface PipelineResult {
 	readonly inputGame: string
 	readonly recommendations: ReadonlyArray<SimilarityEntry>
-	readonly llmResponse: string
+	readonly llmResponse: Option.Option<string>
 }
 
 export const pipeline = (title: string, topN: number) =>
@@ -25,9 +25,13 @@ export const pipeline = (title: string, topN: number) =>
 		)
 
 		const prompt = buildPrompt(title, recs.recommendations)
-		const llmResponse = yield* llmService.generateResponse(prompt)
+		const llmResponse = yield* Effect.option(llmService.generateResponse(prompt))
 
-		yield* Effect.logInfo(`pipeline: LLM responded (${llmResponse.length} chars)`)
+		if (Option.isSome(llmResponse)) {
+			yield* Effect.logInfo(`pipeline: LLM responded (${llmResponse.value.length} chars)`)
+		} else {
+			yield* Effect.logWarning(`pipeline: LLM failed, returning recommendations without LLM response`)
+		}
 
 		const result: PipelineResult = {
 			inputGame: title,

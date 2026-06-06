@@ -1,9 +1,8 @@
 import { HttpServerRequest } from '@effect/platform'
-import { Effect, ParseResult, Schema } from 'effect'
+import { Effect, Option, ParseResult, Schema } from 'effect'
 
 import {
 	GameNotFoundError,
-	LlmError,
 	ModelNotLoadedError,
 } from '../../lib/errors.js'
 import { appResponseSuccess, appResponseError } from '../../lib/response.js'
@@ -35,7 +34,7 @@ export const recommendHandler = Effect.gen(function* () {
 			input_game: result.inputGame,
 			status: 'success' as const,
 			recommendations,
-			llm_response: result.llmResponse,
+			llm_response: Option.getOrElse(result.llmResponse, () => null),
 		},
 	}
 
@@ -56,16 +55,6 @@ export const recommendHandler = Effect.gen(function* () {
 				return yield* appResponseError(503, 'Layanan data belum siap', 'ModelNotLoadedError', {
 					reason: e.reason,
 				})
-			}),
-		LlmError: (e: LlmError) =>
-			Effect.gen(function* () {
-				yield* Effect.logError(`recommend LLM error: ${e.message}`)
-				return yield* appResponseError(
-					502,
-					'Gagal mendapatkan respon dari AI upstream',
-					'LlmError',
-					{ message: e.message },
-				)
 			}),
 		ParseError: (e: ParseResult.ParseError) =>
 			Effect.gen(function* () {

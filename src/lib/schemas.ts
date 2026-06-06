@@ -16,7 +16,7 @@ export const RecommendResponse = Schema.Struct({
 		input_game: Schema.String,
 		status: Schema.String,
 		recommendations: Schema.Array(GameRecommendation),
-		llm_response: Schema.String,
+		llm_response: Schema.NullOr(Schema.String),
 	}),
 })
 

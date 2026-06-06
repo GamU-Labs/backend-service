@@ -2,7 +2,7 @@ import { LanguageModel } from '@effect/ai'
 import { GoogleClient, GoogleLanguageModel } from '@effect/ai-google'
 import { OpenAiClient, OpenAiLanguageModel } from '@effect/ai-openai'
 import { FetchHttpClient } from '@effect/platform'
-import { Context, Effect, Layer, Redacted } from 'effect'
+import { Context, Duration, Effect, Layer, Redacted } from 'effect'
 
 import { AppConfig } from '../../config/config.js'
 import { LlmError } from '../../lib/errors.js'
@@ -54,6 +54,7 @@ export const LLMServiceLive = Layer.effect(
 					LanguageModel.generateText({ prompt })
 						.pipe(Effect.map((r) => r.text))
 						.pipe(Effect.provide(geminiLayer))
+						.pipe(Effect.timeout(Duration.seconds(10)))
 						.pipe(Effect.mapError((e) => new LlmError({ message: e.message }))),
 				)
 
@@ -65,6 +66,7 @@ export const LLMServiceLive = Layer.effect(
 					LanguageModel.generateText({ prompt })
 						.pipe(Effect.map((r) => r.text))
 						.pipe(Effect.provide(openaiLayer))
+						.pipe(Effect.timeout(Duration.seconds(10)))
 						.pipe(Effect.mapError((e) => new LlmError({ message: e.message }))),
 				)
 
