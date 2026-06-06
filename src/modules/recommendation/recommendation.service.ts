@@ -1,7 +1,6 @@
 import { Context, Effect, Layer } from 'effect'
-import { FileSystem } from '@effect/platform/FileSystem'
-import { Path } from '@effect/platform/Path'
-import { GameDataLayer, GameDataLayerLive, SimilarityEntry } from '../../data/games.js'
+import { GameDataLayer } from '../../data/games.js'
+import type { SimilarityEntry } from '../../data/games.js'
 import { GameNotFoundError, ModelNotLoadedError } from '../../lib/errors.js'
 
 export interface RecommendationResult {
@@ -16,15 +15,12 @@ export interface RecommendationService {
 	) => Effect.Effect<RecommendationResult, GameNotFoundError | ModelNotLoadedError>
 }
 
-export class RecommendationService extends Context.Tag('RecommendationService')<
-	RecommendationService,
-	RecommendationService
->() {}
+export const RecommendationService = Context.GenericTag<RecommendationService>('RecommendationService')
 
 export const RecommendationServiceLive: Layer.Layer<
 	RecommendationService,
 	never,
-	FileSystem | Path
+	GameDataLayer
 > = Layer.effect(
 	RecommendationService,
 	Effect.gen(function* () {
@@ -48,4 +44,4 @@ export const RecommendationServiceLive: Layer.Layer<
 		}
 		return service
 	}),
-).pipe(Layer.provideMerge(GameDataLayerLive))
+)

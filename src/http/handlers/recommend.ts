@@ -3,7 +3,6 @@ import { Effect, ParseResult, Schema } from 'effect'
 
 import {
 	GameNotFoundError,
-	InvalidInputError,
 	LlmError,
 	ModelNotLoadedError,
 } from '../../lib/errors.js'
@@ -66,16 +65,6 @@ export const recommendHandler = Effect.gen(function* () {
 					'Gagal mendapatkan respon dari AI upstream',
 					'LlmError',
 					{ message: e.message },
-				)
-			}),
-		InvalidInputError: (e: InvalidInputError) =>
-			Effect.gen(function* () {
-				yield* Effect.logWarning(`recommend invalid input: ${e.detail}`)
-				return yield* appResponseError(
-					400,
-					"Input tidak valid atau parameter 'judul' kurang",
-					'InvalidInputError',
-					{ detail: e.detail },
 				)
 			}),
 		ParseError: (e: ParseResult.ParseError) =>

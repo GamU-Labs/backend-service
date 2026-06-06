@@ -11,7 +11,7 @@ export interface LLMService {
 	readonly generateResponse: (prompt: string) => Effect.Effect<string, LlmError>
 }
 
-export class LLMService extends Context.Tag('LLMService')<LLMService, LLMService>() {}
+export const LLMService = Context.GenericTag<LLMService>('LLMService')
 
 const makeGeminiLayer = (apiKey: string) =>
 	GoogleLanguageModel.layer({
@@ -46,7 +46,7 @@ export const LLMServiceLive = Layer.effect(
 			config.routerModel,
 		)
 
-		const service: LLMService = {
+		const service = {
 			generateResponse: (prompt: string) => {
 				const logGemini = Effect.logDebug(`LLM: trying Gemini`)
 				const tryGemini = Effect.zipRight(

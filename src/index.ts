@@ -3,15 +3,9 @@ import { NodeContext, NodeHttpServer } from '@effect/platform-node'
 import { Effect, Layer } from 'effect'
 import { createServer } from 'node:http'
 
-import { AppConfig, ConfigLayer } from './config/config.js'
+import { AppConfig } from './config/config.js'
 import { buildAppRouter } from './http/app.js'
-import { LLMServiceLive } from './modules/llm/llm.service.js'
-import { RecommendationServiceLive } from './modules/recommendation/recommendation.service.js'
-
-const AppLayer = Layer.merge(RecommendationServiceLive, LLMServiceLive).pipe(
-	Layer.provideMerge(ConfigLayer),
-	Layer.provideMerge(NodeContext.layer),
-)
+import { AppLayer } from './layer.js'
 
 const main = Effect.gen(function* () {
 	const config = yield* AppConfig
@@ -26,4 +20,6 @@ const main = Effect.gen(function* () {
 	yield* Layer.launch(serverLayer.pipe(Layer.provide(AppLayer)))
 })
 
-Effect.runPromise(Effect.provide(main, AppLayer)).catch(console.error)
+Effect.runPromise(
+	Effect.provide(main, AppLayer.pipe(Layer.provideMerge(NodeContext.layer))),
+).catch(console.error)
