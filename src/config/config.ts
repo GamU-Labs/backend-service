@@ -6,6 +6,7 @@ export const AppConfigSchema = Schema.Struct({
 	routerApiKey: Schema.String,
 	routerBaseUrl: Schema.String,
 	routerModel: Schema.String,
+	port: Schema.Number,
 })
 
 export type AppConfig = Schema.Schema.Type<typeof AppConfigSchema>
@@ -18,6 +19,7 @@ const appConfig: Config.Config<AppConfig> = Config.all({
 	routerApiKey: Config.string('ROUTER_API_KEY'),
 	routerBaseUrl: Config.string('ROUTER_BASE_URL'),
 	routerModel: Config.string('ROUTER_MODEL'),
+	port: Config.number('PORT'),
 })
 
 export const ConfigLayer: Layer.Layer<AppConfig, ConfigError.ConfigError> = Layer.effect(

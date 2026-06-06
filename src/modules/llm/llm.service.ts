@@ -55,15 +55,21 @@ export const LLMServiceLive = Layer.effect(
 
 		const service: LLMService = {
 			generateResponse: (prompt: string) => {
-				const tryGemini = LanguageModel.generateText({ prompt })
-					.pipe(Effect.map((r) => r.text))
-					.pipe(Effect.provide(geminiLayer))
-					.pipe(Effect.mapError((e) => new LlmError({ message: e.message, cause: e._tag })))
+			const logGemini = Effect.logDebug(`LLM: trying Gemini`)
+			const tryGemini = Effect.zipRight(logGemini,
+					LanguageModel.generateText({ prompt })
+						.pipe(Effect.map((r) => r.text))
+						.pipe(Effect.provide(geminiLayer))
+						.pipe(Effect.mapError((e) => new LlmError({ message: e.message, cause: e._tag }))),
+				)
 
-				const tryOpenAI = LanguageModel.generateText({ prompt })
-					.pipe(Effect.map((r) => r.text))
-					.pipe(Effect.provide(openaiLayer))
-					.pipe(Effect.mapError((e) => new LlmError({ message: e.message, cause: e._tag })))
+				const logOpenAI = Effect.logInfo(`LLM: Gemini failed, falling back to OpenRouter (${config.routerModel})`)
+				const tryOpenAI = Effect.zipRight(logOpenAI,
+					LanguageModel.generateText({ prompt })
+						.pipe(Effect.map((r) => r.text))
+						.pipe(Effect.provide(openaiLayer))
+						.pipe(Effect.mapError((e) => new LlmError({ message: e.message, cause: e._tag }))),
+				)
 
 				return Effect.catchAll(tryGemini, () => tryOpenAI)
 			},

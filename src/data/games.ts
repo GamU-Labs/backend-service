@@ -45,7 +45,7 @@ const makeGameDataLayer = Effect.gen(function* () {
 	const fs = yield* FileSystem
 	const path = yield* Path
 
-	const dataDir = path.join(import.meta.dirname, '..', '..', 'data')
+	const dataDir = path.join(process.cwd(), 'data')
 
 	const [gamesRaw, similarityRaw] = yield* Effect.all(
 		[
