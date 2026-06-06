@@ -5,7 +5,14 @@ import { createServer } from 'node:http'
 
 import { AppConfig } from './config/config.js'
 import { buildAppRouter } from './http/app.js'
+import { rateLimitMiddleware } from './http/middleware/rate-limit.js'
 import { AppLayer } from './layer.js'
+
+const ServerLayer = (config: AppConfig) =>
+	HttpServer.serve(buildAppRouter(), rateLimitMiddleware).pipe(
+		Layer.provide(AppLayer),
+		Layer.provide(NodeHttpServer.layer(createServer, { port: config.port })),
+	)
 
 const main = Effect.gen(function* () {
 	const config = yield* AppConfig
@@ -13,13 +20,9 @@ const main = Effect.gen(function* () {
 		`Starting server on port ${config.port} (router model: ${config.routerModel})`,
 	)
 
-	const serverLayer = HttpServer.serve(buildAppRouter()).pipe(
-		Layer.provide(NodeHttpServer.layer(createServer, { port: config.port })),
-	)
-
-	yield* Layer.launch(serverLayer.pipe(Layer.provide(AppLayer)))
+	yield* Layer.launch(ServerLayer(config))
 })
 
-Effect.runPromise(
-	Effect.provide(main, AppLayer.pipe(Layer.provideMerge(NodeContext.layer))),
-).catch(console.error)
+Effect.runPromise(Effect.provide(main, AppLayer.pipe(Layer.provideMerge(NodeContext.layer)))).catch(
+	console.error,
+)

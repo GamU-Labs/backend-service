@@ -2,6 +2,7 @@ import { Effect, Layer } from 'effect'
 
 import { ConfigLayer } from './config/config.js'
 import { GameDataLayer, GameDataLayerLive } from './data/games.js'
+import { LlmCacheServiceLive } from './modules/llm/llm.cache.js'
 import { LLMServiceLive } from './modules/llm/llm.service.js'
 import { RecommendationServiceLive } from './modules/recommendation/recommendation.service.js'
 
@@ -11,6 +12,8 @@ const GameDataLayerSafe = GameDataLayerLive.pipe(
 
 const RecLayer = RecommendationServiceLive.pipe(Layer.provide(GameDataLayerSafe))
 
-export const AppLayer = Layer.mergeAll(RecLayer, LLMServiceLive).pipe(
+const CoreServices = Layer.mergeAll(RecLayer, LLMServiceLive)
+
+export const AppLayer = Layer.provideMerge(LlmCacheServiceLive, CoreServices).pipe(
 	Layer.provideMerge(ConfigLayer),
 )

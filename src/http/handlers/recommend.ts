@@ -1,10 +1,7 @@
 import { HttpServerRequest } from '@effect/platform'
 import { Effect, Option, ParseResult, Schema } from 'effect'
 
-import {
-	GameNotFoundError,
-	ModelNotLoadedError,
-} from '../../lib/errors.js'
+import { GameNotFoundError, ModelNotLoadedError } from '../../lib/errors.js'
 import { appResponseSuccess, appResponseError } from '../../lib/response.js'
 import { RecommendResponse } from '../../lib/schemas.js'
 import { pipeline } from '../../modules/recommendation/pipeline.js'
@@ -52,9 +49,12 @@ export const recommendHandler = Effect.gen(function* () {
 		ModelNotLoadedError: (e: ModelNotLoadedError) =>
 			Effect.gen(function* () {
 				yield* Effect.logError(`recommend model not loaded: ${e.reason}`)
-				return yield* appResponseError(503, 'Layanan data belum siap', 'ModelNotLoadedError', {
-					reason: e.reason,
-				})
+				return yield* appResponseError(
+					503,
+					'Layanan data belum siap',
+					'ModelNotLoadedError',
+					{ reason: e.reason },
+				)
 			}),
 		ParseError: (e: ParseResult.ParseError) =>
 			Effect.gen(function* () {
