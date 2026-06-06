@@ -9,3 +9,13 @@ export const RecommendQuerySchema = Schema.Struct({
 })
 
 export type RecommendQuery = Schema.Schema.Type<typeof RecommendQuerySchema>
+
+export const RecommendByQueryBodySchema = Schema.Struct({
+	query: Schema.String.pipe(
+		Schema.minLength(1),
+		Schema.maxLength(500),
+	),
+	topN: Schema.optionalWith(Schema.Number, { default: () => 5 }),
+})
+
+export type RecommendByQueryBody = Schema.Schema.Type<typeof RecommendByQueryBodySchema>

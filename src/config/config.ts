@@ -6,6 +6,7 @@ export const AppConfigSchema = Schema.Struct({
 	routerApiKey: Schema.String,
 	routerBaseUrl: Schema.String,
 	routerModel: Schema.String,
+	mlServiceUrl: Schema.String,
 	port: Schema.Number,
 })
 
@@ -19,6 +20,7 @@ const appConfig: Config.Config<AppConfig> = Config.all({
 	routerApiKey: Config.string('ROUTER_API_KEY'),
 	routerBaseUrl: Config.string('ROUTER_BASE_URL'),
 	routerModel: Config.string('ROUTER_MODEL'),
+	mlServiceUrl: Config.string('ML_SERVICE_URL'),
 	port: Config.number('PORT'),
 })
 

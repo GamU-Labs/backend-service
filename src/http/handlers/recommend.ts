@@ -7,7 +7,7 @@ import { RecommendResponse } from '../../lib/schemas.js'
 import { pipeline } from '../../modules/recommendation/pipeline.js'
 import { RecommendQuerySchema } from '../schemas.js'
 
-export const recommendHandler = Effect.gen(function* () {
+export const recommendByTitleHandler = Effect.gen(function* () {
 	const query = yield* HttpServerRequest.schemaSearchParams(RecommendQuerySchema)
 	yield* Effect.logInfo(`recommend request: title="${query.judul}", topN=${query.topN}`)
 

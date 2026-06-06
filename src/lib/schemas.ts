@@ -21,3 +21,15 @@ export const RecommendResponse = Schema.Struct({
 })
 
 export type RecommendResponse = Schema.Schema.Type<typeof RecommendResponse>
+
+export const RecommendByQueryResponse = Schema.Struct({
+	message: Schema.String,
+	data: Schema.Struct({
+		query: Schema.String,
+		status: Schema.String,
+		recommendations: Schema.Array(GameRecommendation),
+		llm_response: Schema.NullOr(Schema.String),
+	}),
+})
+
+export type RecommendByQueryResponse = Schema.Schema.Type<typeof RecommendByQueryResponse>

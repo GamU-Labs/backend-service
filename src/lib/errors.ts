@@ -22,3 +22,7 @@ export class InvalidInputError extends Schema.TaggedError<InvalidInputError>()(
 export class RateLimitError extends Schema.TaggedError<RateLimitError>()('RateLimitError', {
 	ip: Schema.String,
 }) {}
+
+export class MLServiceError extends Schema.TaggedError<MLServiceError>()('MLServiceError', {
+	message: Schema.String,
+}) {}
