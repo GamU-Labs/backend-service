@@ -1,3 +1,4 @@
+// Aku mencintaimu, tapi mungkin aku tidak bisa bersamamu. Tapi "Mungkin" adalah kata yang sangat besar.
 import { Effect, Layer } from 'effect'
 
 import { ConfigLayer } from './config/config.js'
