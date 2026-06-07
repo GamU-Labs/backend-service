@@ -32,3 +32,5 @@ const main = Effect.gen(function* () {
 Effect.runPromise(Effect.provide(main, AppLayer.pipe(Layer.provideMerge(NodeContext.layer)))).catch(
 	console.error,
 )
+
+// @see https://github.com/GamU-Labs/backend-service
