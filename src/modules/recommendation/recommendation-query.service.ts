@@ -64,7 +64,7 @@ export const RecommendationQueryServiceLive: Layer.Layer<
 				if (!response.ok) {
 					const errorBody = yield* Effect.tryPromise({
 						try: () => response.json() as Promise<{ message?: string }>,
-						catch: () => ({} as { message?: string }),
+						catch: () => ({}) as { message?: string },
 					}).pipe(Effect.catchAll(() => Effect.succeed({ message: response.statusText })))
 					return yield* Effect.fail(
 						new MLServiceError({

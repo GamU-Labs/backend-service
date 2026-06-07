@@ -12,10 +12,13 @@ export const LlmCacheService = Context.GenericTag<LlmCacheService>('LlmCacheServ
 
 const makeKey = (title: string, topN: number) => `${title.toLowerCase()}:${topN}`
 
-const handleCacheError = (
-	error: GameNotFoundError | ModelNotLoadedError,
-): LlmError =>
-	new LlmError({ message: error instanceof GameNotFoundError ? `Game not found: ${error.title}` : 'Model not loaded' })
+const handleCacheError = (error: GameNotFoundError | ModelNotLoadedError): LlmError =>
+	new LlmError({
+		message:
+			error instanceof GameNotFoundError
+				? `Game not found: ${error.title}`
+				: 'Model not loaded',
+	})
 
 export const LlmCacheServiceLive = Layer.effect(
 	LlmCacheService,

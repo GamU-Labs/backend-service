@@ -1,4 +1,4 @@
-import { HttpServer } from '@effect/platform'
+import { HttpServer, HttpMiddleware } from '@effect/platform'
 import { NodeContext, NodeHttpServer } from '@effect/platform-node'
 import { Effect, Layer } from 'effect'
 import { createServer } from 'node:http'
@@ -8,8 +8,14 @@ import { buildAppRouter } from './http/app.js'
 import { rateLimitMiddleware } from './http/middleware/rate-limit.js'
 import { AppLayer } from './layer.js'
 
+const corsMiddleware = HttpMiddleware.cors({
+	allowedOrigins: ['http://localhost:3002'],
+	allowedMethods: ['GET', 'POST', 'OPTIONS'],
+	allowedHeaders: ['Content-Type', 'Authorization'],
+})
+
 const ServerLayer = (config: AppConfig) =>
-	HttpServer.serve(buildAppRouter(), rateLimitMiddleware).pipe(
+	HttpServer.serve(buildAppRouter().pipe(rateLimitMiddleware).pipe(corsMiddleware)).pipe(
 		Layer.provide(AppLayer),
 		Layer.provide(NodeHttpServer.layer(createServer, { port: config.port })),
 	)

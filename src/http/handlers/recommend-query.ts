@@ -12,9 +12,7 @@ import { buildQueryPrompt } from '../../modules/llm/prompt.js'
 
 export const recommendByQueryHandler = Effect.gen(function* () {
 	const body = yield* HttpServerRequest.schemaBodyJson(RecommendByQueryBodySchema).pipe(
-		Effect.catchAll((e) =>
-			Effect.fail(new InvalidInputError({ detail: e.message })),
-		),
+		Effect.catchAll((e) => Effect.fail(new InvalidInputError({ detail: e.message }))),
 	)
 
 	yield* Effect.logInfo(`recommend by query: query="${body.query}", topN=${body.topN}`)
