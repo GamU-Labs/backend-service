@@ -8,17 +8,18 @@ import { buildAppRouter } from './http/app.js'
 import { rateLimitMiddleware } from './http/middleware/rate-limit.js'
 import { AppLayer } from './layer.js'
 
-const corsMiddleware = HttpMiddleware.cors({
-	allowedOrigins: ['http://localhost:3002'],
-	allowedMethods: ['GET', 'POST', 'OPTIONS'],
-	allowedHeaders: ['Content-Type', 'Authorization'],
-})
+const ServerLayer = (config: AppConfig) => {
+	const corsMiddleware = HttpMiddleware.cors({
+		allowedOrigins: config.corsOrigins,
+		allowedMethods: ['GET', 'POST', 'OPTIONS'],
+		allowedHeaders: ['Content-Type', 'Authorization'],
+	})
 
-const ServerLayer = (config: AppConfig) =>
-	HttpServer.serve(buildAppRouter().pipe(rateLimitMiddleware).pipe(corsMiddleware)).pipe(
+	return HttpServer.serve(buildAppRouter().pipe(rateLimitMiddleware).pipe(corsMiddleware)).pipe(
 		Layer.provide(AppLayer),
 		Layer.provide(NodeHttpServer.layer(createServer, { port: config.port })),
 	)
+}
 
 const main = Effect.gen(function* () {
 	const config = yield* AppConfig

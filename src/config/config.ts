@@ -8,6 +8,7 @@ export const AppConfigSchema = Schema.Struct({
 	routerModel: Schema.String,
 	mlServiceUrl: Schema.String,
 	port: Schema.Number,
+	corsOrigins: Schema.Array(Schema.String),
 })
 
 export type AppConfig = Schema.Schema.Type<typeof AppConfigSchema>
@@ -22,6 +23,9 @@ const appConfig: Config.Config<AppConfig> = Config.all({
 	routerModel: Config.string('ROUTER_MODEL'),
 	mlServiceUrl: Config.string('ML_SERVICE_URL'),
 	port: Config.number('PORT'),
+	corsOrigins: Config.string('CORS_ORIGINS').pipe(
+		Config.map((s) => s.split(',').map((o) => o.trim()).filter((o) => o.length > 0)),
+	),
 })
 
 export const ConfigLayer: Layer.Layer<AppConfig, ConfigError.ConfigError> = Layer.effect(
