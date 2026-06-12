@@ -107,7 +107,7 @@ export const SteamImageServiceLive: Layer.Layer<SteamImageService, SqlError, Sql
 
 					const appIds = recommendations.map((r) => r.app_id)
 					const cachedRows = yield* sql`
-					SELECT app_id, header_image FROM game_images WHERE app_id IN (${appIds})
+					SELECT app_id, header_image FROM game_images WHERE ${sql.in('app_id', appIds)}
 				`
 
 					const cached = new Map<number, SteamImageResult>()
