@@ -3,9 +3,10 @@ import { LLMService } from './llm.service.js'
 import { buildPrompt } from './prompt.js'
 import { RecommendationService } from '../recommendation/recommendation.service.js'
 import { GameNotFoundError, LlmError, ModelNotLoadedError } from '../../lib/errors.js'
+import { type LlmExplanation } from '../../lib/schemas.js'
 
 export interface LlmCacheService {
-	readonly get: (title: string, topN: number) => Effect.Effect<string, LlmError>
+	readonly get: (title: string, topN: number) => Effect.Effect<LlmExplanation, LlmError>
 }
 
 export const LlmCacheService = Context.GenericTag<LlmCacheService>('LlmCacheService')
@@ -39,7 +40,7 @@ export const LlmCacheServiceLive = Layer.effect(
 						.recommend(normalizedTitle, topN)
 						.pipe(Effect.mapError(handleCacheError))
 					const prompt = buildPrompt(normalizedTitle, recs.recommendations)
-					return yield* llm.generateResponse(prompt)
+					return yield* llm.generateStructuredResponse(prompt)
 				}),
 		})
 

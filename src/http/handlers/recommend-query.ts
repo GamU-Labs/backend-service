@@ -31,7 +31,7 @@ export const recommendByQueryHandler = Effect.gen(function* () {
 	}))
 
 	const prompt = buildQueryPrompt(body.query, result.recommendations)
-	const llmResponse = yield* Effect.option(llm.generateResponse(prompt))
+	const llmResponse = yield* Effect.option(llm.generateStructuredResponse(prompt))
 
 	if (Option.isSome(llmResponse)) {
 		yield* Effect.logInfo(
@@ -49,7 +49,7 @@ export const recommendByQueryHandler = Effect.gen(function* () {
 			query: result.query,
 			status: 'success' as const,
 			recommendations,
-			llm_response: Option.getOrElse(llmResponse, () => null),
+			llm_response: Option.isSome(llmResponse) ? llmResponse.value : null,
 		},
 	}
 

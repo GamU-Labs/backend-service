@@ -24,7 +24,12 @@ const appConfig: Config.Config<AppConfig> = Config.all({
 	mlServiceUrl: Config.string('ML_SERVICE_URL'),
 	port: Config.number('PORT'),
 	corsOrigins: Config.string('CORS_ORIGINS').pipe(
-		Config.map((s) => s.split(',').map((o) => o.trim()).filter((o) => o.length > 0)),
+		Config.map((s) =>
+			s
+				.split(',')
+				.map((o) => o.trim())
+				.filter((o) => o.length > 0),
+		),
 	),
 })
 

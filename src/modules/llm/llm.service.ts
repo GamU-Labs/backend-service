@@ -6,9 +6,11 @@ import { Context, Duration, Effect, Layer, Redacted } from 'effect'
 
 import { AppConfig } from '../../config/config.js'
 import { LlmError } from '../../lib/errors.js'
+import { LlmExplanationSchema, type LlmExplanation } from '../../lib/schemas.js'
 
 export interface LLMService {
 	readonly generateResponse: (prompt: string) => Effect.Effect<string, LlmError>
+	readonly generateStructuredResponse: (prompt: string) => Effect.Effect<LlmExplanation, LlmError>
 }
 
 export const LLMService = Context.GenericTag<LLMService>('LLMService')
@@ -65,6 +67,39 @@ export const LLMServiceLive = Layer.effect(
 					logOpenAI,
 					LanguageModel.generateText({ prompt })
 						.pipe(Effect.map((r) => r.text))
+						.pipe(Effect.provide(openaiLayer))
+						.pipe(Effect.timeout(Duration.seconds(10)))
+						.pipe(Effect.mapError((e) => new LlmError({ message: e.message }))),
+				)
+
+				return Effect.catchAll(tryGemini, () => tryOpenAI)
+			},
+			generateStructuredResponse: (prompt: string) => {
+				const logGemini = Effect.logDebug(`LLM: trying Gemini (structured)`)
+				const tryGemini = Effect.zipRight(
+					logGemini,
+					LanguageModel.generateObject({
+						prompt,
+						schema: LlmExplanationSchema,
+						objectName: 'GameRecommendationExplanation',
+					})
+						.pipe(Effect.map((r) => r.value))
+						.pipe(Effect.provide(geminiLayer))
+						.pipe(Effect.timeout(Duration.seconds(10)))
+						.pipe(Effect.mapError((e) => new LlmError({ message: e.message }))),
+				)
+
+				const logOpenAI = Effect.logInfo(
+					`LLM: Gemini (structured) failed, falling back to OpenRouter (${config.routerModel})`,
+				)
+				const tryOpenAI = Effect.zipRight(
+					logOpenAI,
+					LanguageModel.generateObject({
+						prompt,
+						schema: LlmExplanationSchema,
+						objectName: 'GameRecommendationExplanation',
+					})
+						.pipe(Effect.map((r) => r.value))
 						.pipe(Effect.provide(openaiLayer))
 						.pipe(Effect.timeout(Duration.seconds(10)))
 						.pipe(Effect.mapError((e) => new LlmError({ message: e.message }))),

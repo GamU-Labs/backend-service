@@ -1,5 +1,18 @@
 import { Schema } from 'effect'
 
+export const LlmHighlightSchema = Schema.Struct({
+	game_title: Schema.String,
+	reason: Schema.String,
+})
+
+export const LlmExplanationSchema = Schema.Struct({
+	intro: Schema.String,
+	highlights: Schema.Array(LlmHighlightSchema),
+	conclusion: Schema.String,
+})
+
+export type LlmExplanation = Schema.Schema.Type<typeof LlmExplanationSchema>
+
 export const GameRecommendation = Schema.Struct({
 	title: Schema.String,
 	rating: Schema.Number,
@@ -16,7 +29,7 @@ export const RecommendResponse = Schema.Struct({
 		input_game: Schema.String,
 		status: Schema.String,
 		recommendations: Schema.Array(GameRecommendation),
-		llm_response: Schema.NullOr(Schema.String),
+		llm_response: Schema.NullOr(LlmExplanationSchema),
 	}),
 })
 
@@ -28,7 +41,7 @@ export const RecommendByQueryResponse = Schema.Struct({
 		query: Schema.String,
 		status: Schema.String,
 		recommendations: Schema.Array(GameRecommendation),
-		llm_response: Schema.NullOr(Schema.String),
+		llm_response: Schema.NullOr(LlmExplanationSchema),
 	}),
 })
 

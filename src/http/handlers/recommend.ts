@@ -31,7 +31,7 @@ export const recommendByTitleHandler = Effect.gen(function* () {
 			input_game: result.inputGame,
 			status: 'success' as const,
 			recommendations,
-			llm_response: Option.getOrElse(result.llmResponse, () => null),
+			llm_response: Option.isSome(result.llmResponse) ? result.llmResponse.value : null,
 		},
 	}
 

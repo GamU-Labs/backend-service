@@ -1,13 +1,14 @@
 import { Effect, Option } from 'effect'
 
 import { type SimilarityEntry } from '../../data/games.js'
+import { type LlmExplanation } from '../../lib/schemas.js'
 import { LlmCacheService } from '../llm/llm.cache.js'
 import { RecommendationService } from './recommendation.service.js'
 
 export interface PipelineResult {
 	readonly inputGame: string
 	readonly recommendations: ReadonlyArray<SimilarityEntry>
-	readonly llmResponse: Option.Option<string>
+	readonly llmResponse: Option.Option<LlmExplanation>
 }
 
 export const pipeline = (title: string, topN: number) =>
@@ -26,7 +27,9 @@ export const pipeline = (title: string, topN: number) =>
 		const llmResponse = yield* Effect.option(llmCache.get(title, topN))
 
 		if (Option.isSome(llmResponse)) {
-			yield* Effect.logInfo(`pipeline: LLM responded (${llmResponse.value.length} chars)`)
+			yield* Effect.logInfo(
+				`pipeline: LLM responded (${llmResponse.value.highlights.length} highlights)`,
+			)
 		} else {
 			yield* Effect.logWarning(
 				`pipeline: LLM failed, returning recommendations without LLM response`,
