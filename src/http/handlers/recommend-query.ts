@@ -1,7 +1,7 @@
 import { HttpServerRequest } from '@effect/platform'
 import { Effect, Option, Schema, ParseResult } from 'effect'
 
-import { MLServiceError, InvalidInputError } from '../../lib/errors.js'
+import { MLServiceError, InvalidInputError, SanitizeInputError } from '../../lib/errors.js'
 import { appResponseSuccess, appResponseError } from '../../lib/response.js'
 import { RecommendByQueryResponse } from '../../lib/schemas.js'
 import { RecommendByQueryBodySchema } from '../schemas.js'
@@ -9,18 +9,21 @@ import { RecommendationQueryService } from '../../modules/recommendation/recomme
 import type { SimilarityEntry } from '../../data/games.js'
 import { LLMService } from '../../modules/llm/llm.service.js'
 import { buildQueryPrompt } from '../../modules/llm/prompt.js'
+import { sanitizeQuery } from '../../lib/sanitize.js'
 
 export const recommendByQueryHandler = Effect.gen(function* () {
 	const body = yield* HttpServerRequest.schemaBodyJson(RecommendByQueryBodySchema).pipe(
 		Effect.catchAll((e) => Effect.fail(new InvalidInputError({ detail: e.message }))),
 	)
 
-	yield* Effect.logInfo(`recommend by query: query="${body.query}", topN=${body.topN}`)
+	const sanitizedQuery = yield* sanitizeQuery(body.query)
+
+	yield* Effect.logInfo(`recommend by query: query="${sanitizedQuery}", topN=${body.topN}`)
 
 	const queryService = yield* RecommendationQueryService
 	const llm = yield* LLMService
 
-	const result = yield* queryService.recommendByQuery(body.query, body.topN)
+	const result = yield* queryService.recommendByQuery(sanitizedQuery, body.topN)
 
 	const recommendations = result.recommendations.map((r: SimilarityEntry) => ({
 		title: r.title,
@@ -30,16 +33,16 @@ export const recommendByQueryHandler = Effect.gen(function* () {
 		similarity_score: r.similarity_score,
 	}))
 
-	const prompt = buildQueryPrompt(body.query, result.recommendations)
+	const prompt = buildQueryPrompt(sanitizedQuery, result.recommendations)
 	const llmResponse = yield* Effect.option(llm.generateStructuredResponse(prompt))
 
 	if (Option.isSome(llmResponse)) {
 		yield* Effect.logInfo(
-			`recommend query success: "${body.query}", ${result.recommendations.length} recommendations, LLM responded`,
+			`recommend query success: "${sanitizedQuery}", ${result.recommendations.length} recommendations, LLM responded`,
 		)
 	} else {
 		yield* Effect.logWarning(
-			`recommend query success: "${body.query}", ${result.recommendations.length} recommendations, LLM failed`,
+			`recommend query success: "${sanitizedQuery}", ${result.recommendations.length} recommendations, LLM failed`,
 		)
 	}
 
@@ -57,6 +60,11 @@ export const recommendByQueryHandler = Effect.gen(function* () {
 	return yield* appResponseSuccess(encoded.data, encoded.message)
 }).pipe(
 	Effect.catchTags({
+		SanitizeInputError: (e: SanitizeInputError) =>
+			Effect.gen(function* () {
+				yield* Effect.logWarning(`recommend query sanitize error: ${e.detail}`)
+				return yield* appResponseError(400, e.detail, 'SanitizeInputError')
+			}),
 		MLServiceError: (e: MLServiceError) =>
 			Effect.gen(function* () {
 				yield* Effect.logError(`ML service error: ${e.message}`)
