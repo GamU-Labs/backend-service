@@ -22,11 +22,13 @@ export const recommendByTitleHandler = Effect.gen(function* () {
 	)
 
 	const recommendations = result.recommendations.map((r) => ({
+		app_id: r.app_id,
 		title: r.title,
 		rating: r.rating ? parseFloat(r.rating) : 0,
 		desc_sentence: r.desc_sentence,
 		tags_clean: r.tags_clean,
 		similarity_score: r.similarity_score,
+		header_image: r.header_image,
 	}))
 
 	const body = {

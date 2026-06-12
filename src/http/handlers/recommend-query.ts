@@ -9,6 +9,7 @@ import { RecommendationQueryService } from '../../modules/recommendation/recomme
 import type { SimilarityEntry } from '../../data/games.js'
 import { LLMService } from '../../modules/llm/llm.service.js'
 import { buildQueryPrompt } from '../../modules/llm/prompt.js'
+import { SteamImageService } from '../../modules/steam/steam-image.service.js'
 import { sanitizeQuery } from '../../lib/sanitize.js'
 
 export const recommendByQueryHandler = Effect.gen(function* () {
@@ -25,12 +26,22 @@ export const recommendByQueryHandler = Effect.gen(function* () {
 
 	const result = yield* queryService.recommendByQuery(sanitizedQuery, body.topN)
 
+	const steamImage = yield* SteamImageService
+	const imageMap = yield* Effect.catchAll(steamImage.getImages(result.recommendations), (e) =>
+		Effect.gen(function* () {
+			yield* Effect.logWarning(`recommend-query: steam image fetch failed: ${e.message}`)
+			return new Map<number, { header_image: string }>()
+		}),
+	)
+
 	const recommendations = result.recommendations.map((r: SimilarityEntry) => ({
+		app_id: r.app_id,
 		title: r.title,
 		rating: r.rating ? parseFloat(r.rating) : 0,
 		desc_sentence: r.desc_sentence,
 		tags_clean: r.tags_clean,
 		similarity_score: r.similarity_score,
+		header_image: imageMap.get(r.app_id)?.header_image ?? '',
 	}))
 
 	const prompt = buildQueryPrompt(sanitizedQuery, result.recommendations)

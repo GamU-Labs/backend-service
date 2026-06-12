@@ -31,3 +31,8 @@ export class RateLimitError extends Schema.TaggedError<RateLimitError>()('RateLi
 export class MLServiceError extends Schema.TaggedError<MLServiceError>()('MLServiceError', {
 	message: Schema.String,
 }) {}
+
+export class SteamImageError extends Schema.TaggedError<SteamImageError>()('SteamImageError', {
+	message: Schema.String,
+	appId: Schema.Number,
+}) {}

@@ -4,6 +4,7 @@ import { FileSystem } from '@effect/platform/FileSystem'
 import { Path } from '@effect/platform/Path'
 
 export const GameDataEntrySchema = Schema.Struct({
+	app_id: Schema.Number,
 	title: Schema.String,
 	rating: Schema.String,
 	desc_sentence: Schema.String,
@@ -16,6 +17,7 @@ export type GameDataEntry = Schema.Schema.Type<typeof GameDataEntrySchema>
 export type GameData = Schema.Schema.Type<typeof GameDataSchema>
 
 export const SimilarityEntrySchema = Schema.Struct({
+	app_id: Schema.Number,
 	title: Schema.String,
 	rating: Schema.String,
 	desc_sentence: Schema.String,
@@ -65,7 +67,7 @@ const makeGameDataLayer = Effect.gen(function* () {
 		{ concurrency: 2 },
 	)
 
-	const layer: GameDataLayer = { gamesData, similarityLookup }
+	const layer = { gamesData, similarityLookup }
 	return layer
 })
 

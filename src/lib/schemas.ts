@@ -14,11 +14,13 @@ export const LlmExplanationSchema = Schema.Struct({
 export type LlmExplanation = Schema.Schema.Type<typeof LlmExplanationSchema>
 
 export const GameRecommendation = Schema.Struct({
+	app_id: Schema.Number,
 	title: Schema.String,
 	rating: Schema.Number,
 	desc_sentence: Schema.String,
 	tags_clean: Schema.String,
 	similarity_score: Schema.Number,
+	header_image: Schema.String,
 })
 
 export type GameRecommendation = Schema.Schema.Type<typeof GameRecommendation>
